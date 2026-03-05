@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Pokémon par Numéro</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Librairie pour lire le fichier Excel directement dans le navigateur -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <h1>Quiz Pokémon par Numéro</h1>
+        <p class="subtitle">
+          Trouve le Pokémon qui correspond au numéro affiché. Les points sont remis à zéro à chaque nouvelle page.
+        </p>
+      </header>
+
+      <main class="main">
+        <section class="controls">
+          <div class="mode-switch">
+            <button id="mode-mcq" class="mode-button active" data-mode="mcq">
+              Mode QCM (4 choix)
+            </button>
+            <button id="mode-input" class="mode-button" data-mode="input">
+              Mode saisie (écrire le nom)
+            </button>
+          </div>
+
+          <div class="score-board">
+            <span>Score : </span>
+            <span id="score-value">0</span>
+          </div>
+        </section>
+
+        <section class="game">
+          <div id="loading" class="info-banner">
+            Chargement des données Pokémon depuis le fichier Excel...
+            <br />
+            Assure-toi que le fichier <strong>poke(1).xlsx</strong> est bien présent à côté de cette page.
+          </div>
+
+          <div id="error-message" class="info-banner error" hidden></div>
+
+          <div id="question-area" class="question-area" hidden>
+            <div class="question-number">
+              Pokémon n°
+              <span id="pokemon-number">000</span>
+            </div>
+
+            <div id="mcq-area" class="mcq-area">
+              <div class="options-grid">
+                <button class="option-button" data-index="0"></button>
+                <button class="option-button" data-index="1"></button>
+                <button class="option-button" data-index="2"></button>
+                <button class="option-button" data-index="3"></button>
+              </div>
+            </div>
+
+            <div id="input-area" class="input-area" hidden>
+              <label for="answer-input" class="input-label">
+                Tape le nom du Pokémon correspondant à ce numéro :
+              </label>
+              <input
+                id="answer-input"
+                type="text"
+                placeholder="Exemple : Pikachu"
+                autocomplete="off"
+              />
+              <button id="submit-answer" class="primary-button">Valider</button>
+            </div>
+
+            <div id="feedback" class="feedback"></div>
+
+            <button id="next-question" class="secondary-button" hidden>
+              Question suivante
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Les numéros et noms de Pokémon proviennent du fichier
+          <strong>poke(1).xlsx</strong>. Place simplement ce fichier dans le même
+          dossier que cette page pour que le quiz fonctionne sur GitHub Pages.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
+
