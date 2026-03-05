@@ -111,11 +111,18 @@ body {
   padding: 6px 14px;
   border-radius: 999px;
   box-shadow: 0 8px 20px rgba(10, 46, 89, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.score-board #score-value {
+.score-item span {
   font-size: 1.05rem;
-  margin-left: 4px;
+  margin-left: 2px;
+}
+
+.score-separator {
+  opacity: 0.5;
 }
 
 .info-banner {
@@ -132,26 +139,6 @@ body {
   background: #ffeef0;
   color: #86181d;
   border-color: #f69da5;
-}
-
-.manual-load {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-
-.manual-load-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-}
-
-#file-input {
-  padding: 6px;
-  font-size: 0.9rem;
 }
 
 .question-area {

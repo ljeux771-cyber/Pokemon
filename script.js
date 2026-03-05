@@ -1,10 +1,8 @@
-// Nom du fichier Excel attendu à côté de index.html
-const EXCEL_FILE_PATH = "poke(1).xlsx";
-
-let pokemonList = []; // { number: string|number, name: string }
+let pokemonList = []; // { number: string|number, name: string, normalizedName: string }
 let currentPokemon = null;
 let currentMode = "mcq"; // "mcq" ou "input"
 let score = 0;
+let bestScore = 0;
 let hasAnsweredCurrent = false;
 
 const loadingEl = document.getElementById("loading");
@@ -19,11 +17,9 @@ const submitAnswerBtn = document.getElementById("submit-answer");
 const feedbackEl = document.getElementById("feedback");
 const nextQuestionBtn = document.getElementById("next-question");
 const scoreValueEl = document.getElementById("score-value");
+const bestScoreEl = document.getElementById("best-score-value");
 const modeMcqBtn = document.getElementById("mode-mcq");
 const modeInputBtn = document.getElementById("mode-input");
-const fileLoaderEl = document.getElementById("file-loader");
-const fileInputEl = document.getElementById("file-input");
-const fileLoadBtn = document.getElementById("load-file-button");
 
 function normalizeName(str) {
   if (!str) return "";
@@ -35,95 +31,43 @@ function normalizeName(str) {
     .toLowerCase();
 }
 
-function buildPokemonListFromWorkbook(workbook) {
-  const firstSheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[firstSheetName];
-
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  if (!rows || rows.length < 2) {
-    throw new Error("Le fichier Excel ne contient pas assez de lignes.");
-  }
-
-  const headerRow = rows[0].map((h) => (h || "").toString().toLowerCase());
-
-  // On essaie de deviner les colonnes numéro et nom (FR/EN possible)
-  let indexNumber = headerRow.findIndex((h) =>
-    /(num|n°|no|id|index)/i.test(h || "")
-  );
-  let indexName = headerRow.findIndex((h) =>
-    /(nom|name|pokemon)/i.test(h || "")
-  );
-
-  if (indexNumber === -1 || indexName === -1) {
-    // Si impossible de deviner, on tente par défaut : première col = numéro, deuxième = nom
-    indexNumber = 0;
-    indexName = 1;
-  }
-
-  const list = [];
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row) continue;
-    const numRaw = row[indexNumber];
-    const nameRaw = row[indexName];
-    if (numRaw == null || nameRaw == null || nameRaw === "") continue;
-
-    const num = String(numRaw).trim();
-    const name = String(nameRaw).trim();
-    if (!num || !name) continue;
-    list.push({
-      number: num,
-      name,
-      normalizedName: normalizeName(name),
-    });
-  }
-
-  if (list.length === 0) {
+function buildPokemonListFromEmbeddedData() {
+  if (!Array.isArray(POKEMON_DATA) || POKEMON_DATA.length === 0) {
     throw new Error(
-      "Aucune donnée Pokémon valide n'a été trouvée dans le fichier Excel."
+      "Les données Pokémon intégrées (POKEMON_DATA) sont introuvables ou vides."
     );
   }
 
-  pokemonList = list;
-}
-
-async function loadPokemonDataFromServer() {
-  if (typeof XLSX === "undefined") {
-    throw new Error(
-      "La librairie XLSX n'a pas été chargée. Vérifie ta connexion internet."
-    );
-  }
-
-  const response = await fetch(EXCEL_FILE_PATH, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(
-      `Impossible de charger le fichier ${EXCEL_FILE_PATH}. Vérifie qu'il est bien présent dans le même dossier que index.html (ou sélectionne-le manuellement).`
-    );
-  }
-
-  const arrayBuffer = await response.arrayBuffer();
-  const data = new Uint8Array(arrayBuffer);
-  const workbook = XLSX.read(data, { type: "array" });
-
-  buildPokemonListFromWorkbook(workbook);
-}
-
-async function loadPokemonDataFromFile(file) {
-  if (typeof XLSX === "undefined") {
-    throw new Error(
-      "La librairie XLSX n'a pas été chargée. Vérifie ta connexion internet."
-    );
-  }
-
-  const arrayBuffer = await file.arrayBuffer();
-  const data = new Uint8Array(arrayBuffer);
-  const workbook = XLSX.read(data, { type: "array" });
-
-  buildPokemonListFromWorkbook(workbook);
+  pokemonList = POKEMON_DATA.map((p) => ({
+    number: p.number,
+    name: p.name,
+    normalizedName: normalizeName(p.name),
+  }));
 }
 
 function updateScoreDisplay() {
   scoreValueEl.textContent = score;
+  if (bestScoreEl) {
+    bestScoreEl.textContent = bestScore;
+  }
+}
+
+function loadBestScore() {
+  try {
+    const stored = localStorage.getItem("pokeQuizBestScore");
+    const parsed = stored != null ? parseInt(stored, 10) : 0;
+    bestScore = Number.isNaN(parsed) ? 0 : parsed;
+  } catch {
+    bestScore = 0;
+  }
+}
+
+function saveBestScore() {
+  try {
+    localStorage.setItem("pokeQuizBestScore", String(bestScore));
+  } catch {
+    // ignore storage errors
+  }
 }
 
 function resetFeedback() {
@@ -212,6 +156,10 @@ function handleMcqClick(event) {
 
   if (isCorrect) {
     score += 1;
+    if (score > bestScore) {
+      bestScore = score;
+      saveBestScore();
+    }
     updateScoreDisplay();
     feedbackEl.textContent = "Bonne réponse ! 🎉";
     feedbackEl.classList.add("success");
@@ -219,6 +167,8 @@ function handleMcqClick(event) {
     btn.classList.add("wrong");
     feedbackEl.textContent = `Mauvaise réponse. C'était ${currentPokemon.name}.`;
     feedbackEl.classList.add("error");
+    score = 0;
+    updateScoreDisplay();
   }
 
   nextQuestionBtn.hidden = false;
@@ -236,6 +186,10 @@ function handleInputSubmit() {
 
   if (normalizedUser === normalizedCorrect) {
     score += 1;
+    if (score > bestScore) {
+      bestScore = score;
+      saveBestScore();
+    }
     updateScoreDisplay();
     feedbackEl.textContent = "Bonne réponse ! 🎉";
     feedbackEl.classList.remove("error");
@@ -244,6 +198,8 @@ function handleInputSubmit() {
     feedbackEl.textContent = `Non, ce n'est pas ça. C'était ${currentPokemon.name}.`;
     feedbackEl.classList.remove("success");
     feedbackEl.classList.add("error");
+    score = 0;
+    updateScoreDisplay();
   }
 
   nextQuestionBtn.hidden = false;
@@ -282,46 +238,16 @@ function initEvents() {
 
   modeMcqBtn.addEventListener("click", () => setMode("mcq"));
   modeInputBtn.addEventListener("click", () => setMode("input"));
-
-  if (fileLoadBtn && fileInputEl) {
-    fileLoadBtn.addEventListener("click", async () => {
-      if (!fileInputEl.files || !fileInputEl.files[0]) {
-        feedbackEl.textContent = "Choisis d'abord un fichier Excel (.xlsx).";
-        feedbackEl.classList.remove("success");
-        feedbackEl.classList.add("error");
-        return;
-      }
-      try {
-        loadingEl.hidden = false;
-        errorEl.hidden = true;
-        feedbackEl.textContent = "";
-        feedbackEl.classList.remove("success", "error");
-
-        await loadPokemonDataFromFile(fileInputEl.files[0]);
-
-        loadingEl.hidden = true;
-        fileLoaderEl.hidden = true;
-        questionAreaEl.hidden = false;
-        updateScoreDisplay();
-        setMode("mcq");
-      } catch (err) {
-        loadingEl.hidden = true;
-        errorEl.hidden = false;
-        errorEl.textContent =
-          (err && err.message) ||
-          "Erreur lors du chargement du fichier Excel sélectionné.";
-      }
-    });
-  }
 }
 
 async function bootstrap() {
   try {
-    await loadPokemonDataFromServer();
+    buildPokemonListFromEmbeddedData();
     loadingEl.hidden = true;
     errorEl.hidden = true;
     questionAreaEl.hidden = false;
     initEvents();
+     loadBestScore();
     updateScoreDisplay();
     setMode("mcq");
   } catch (err) {
@@ -330,13 +256,6 @@ async function bootstrap() {
     errorEl.hidden = false;
     errorEl.textContent =
       (err && err.message) || "Erreur lors du chargement des données.";
-
-    // Active le mode de sélection manuelle du fichier Excel
-    if (fileLoaderEl) {
-      fileLoaderEl.hidden = false;
-    }
-
-    initEvents();
   }
 }
 

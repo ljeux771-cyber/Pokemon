@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Pokémon par Numéro</title>
     <link rel="stylesheet" href="style.css" />
-    <!-- Librairie pour lire le fichier Excel directement dans le navigateur -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="pokemon_data.js"></script>
     <script defer src="script.js"></script>
   </head>
   <body>
@@ -30,38 +29,24 @@
           </div>
 
           <div class="score-board">
-            <span>Score : </span>
-            <span id="score-value">0</span>
+            <span class="score-item">
+              Score :
+              <span id="score-value">0</span>
+            </span>
+            <span class="score-separator">·</span>
+            <span class="score-item">
+              Meilleur :
+              <span id="best-score-value">0</span>
+            </span>
           </div>
         </section>
 
         <section class="game">
           <div id="loading" class="info-banner">
-            Chargement des données Pokémon depuis le fichier Excel...
-            <br />
-            Assure-toi que le fichier <strong>poke(1).xlsx</strong> est bien présent à côté de cette page (dans le même dossier que
-            <strong>index.html</strong>).
+            Chargement des données Pokémon intégrées...
           </div>
 
           <div id="error-message" class="info-banner error" hidden></div>
-
-          <div id="file-loader" class="info-banner manual-load" hidden>
-            <p>
-              Impossible de charger automatiquement le fichier Excel.
-              <br />
-              Tu peux le sélectionner manuellement ci‑dessous :
-            </p>
-            <div class="manual-load-controls">
-              <input
-                type="file"
-                id="file-input"
-                accept=".xlsx"
-              />
-              <button id="load-file-button" class="primary-button">
-                Charger le fichier
-              </button>
-            </div>
-          </div>
 
           <div id="question-area" class="question-area" hidden>
             <div class="question-number">
@@ -102,9 +87,8 @@
 
       <footer class="footer">
         <p>
-          Les numéros et noms de Pokémon proviennent du fichier
-          <strong>poke(1).xlsx</strong>. Place simplement ce fichier dans le même
-          dossier que cette page pour que le quiz fonctionne sur GitHub Pages.
+          Les numéros et noms de Pokémon sont intégrés directement dans
+          <strong>pokemon_data.js</strong>. Il suffit de copier ces fichiers sur GitHub Pages pour que le quiz fonctionne.
         </p>
       </footer>
     </div>
