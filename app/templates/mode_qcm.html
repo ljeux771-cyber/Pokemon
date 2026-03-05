@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}QCM · Poké-Quiz{% endblock %}
+
+{% block content %}
+  <div class="max-w-xl mx-auto space-y-6">
+    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-semibold">Mode QCM</h1>
+        <a href="{{ url_for('game.home') }}" class="text-xs text-slate-400 hover:text-slate-200">← Retour à l’accueil</a>
+      </div>
+
+      <div class="flex items-center gap-4 mb-4">
+        <div>
+          <p class="text-xs text-slate-400">Série actuelle</p>
+          <p class="text-lg font-bold text-emerald-400">{{ current_score }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Record personnel</p>
+          <p class="text-lg font-bold text-amber-300">{{ best_score }}</p>
+        </div>
+      </div>
+
+      {% if question and choices %}
+        <div class="mb-4">
+          <p class="text-sm text-slate-300 mb-1">Quel est le nom de ce Pokémon ?</p>
+          <div class="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2">
+            <span class="text-xs uppercase tracking-wide text-slate-400">N°</span>
+            <span class="text-2xl font-bold text-secondary">{{ question.number }}</span>
+          </div>
+        </div>
+
+        <form method="post" class="space-y-3">
+          {% for p in choices %}
+            <button
+              type="submit"
+              name="choice"
+              value="{{ p.name }}"
+              class="w-full text-left px-4 py-2 rounded-md border border-slate-700 bg-slate-900 hover:bg-slate-800 text-sm transition"
+            >
+              {{ p.name }}
+            </button>
+          {% endfor %}
+        </form>
+      {% else %}
+        <p class="text-sm text-red-400">
+          Impossible de générer une question : aucune donnée Pokémon.
+        </p>
+      {% endif %}
+    </div>
+
+    {% if feedback is not none %}
+      <div
+        class="border rounded-xl px-4 py-3 text-sm
+        {% if is_correct %}
+          border-emerald-500/60 bg-emerald-900/60
+        {% else %}
+          border-red-500/60 bg-red-900/60
+        {% endif %}
+      "
+      >
+        {{ feedback }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+

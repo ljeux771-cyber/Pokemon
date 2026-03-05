@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Saisie libre · Poké-Quiz{% endblock %}
+
+{% block content %}
+  <div class="max-w-xl mx-auto space-y-6">
+    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-semibold">Mode Saisie Libre</h1>
+        <a href="{{ url_for('game.home') }}" class="text-xs text-slate-400 hover:text-slate-200">← Retour à l’accueil</a>
+      </div>
+
+      <div class="flex items-center gap-4 mb-4">
+        <div>
+          <p class="text-xs text-slate-400">Série actuelle</p>
+          <p class="text-lg font-bold text-emerald-400">{{ current_score }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Record personnel</p>
+          <p class="text-lg font-bold text-amber-300">{{ best_score }}</p>
+        </div>
+      </div>
+
+      {% if question %}
+        <div class="mb-4">
+          <p class="text-sm text-slate-300 mb-1">Quel est le nom de ce Pokémon ?</p>
+          <div class="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2">
+            <span class="text-xs uppercase tracking-wide text-slate-400">N°</span>
+            <span class="text-2xl font-bold text-secondary">{{ question.number }}</span>
+          </div>
+        </div>
+
+        <form method="post" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" for="answer">Nom du Pokémon</label>
+            <input
+              id="answer"
+              name="answer"
+              type="text"
+              autocomplete="off"
+              autofocus
+              required
+              class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary"
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-secondary hover:bg-blue-500 text-sm font-medium transition shadow-lg shadow-blue-500/40 w-full"
+          >
+            Valider
+          </button>
+        </form>
+      {% else %}
+        <p class="text-sm text-red-400">
+          Impossible de générer une question : aucune donnée Pokémon.
+        </p>
+      {% endif %}
+    </div>
+
+    {% if feedback is not none %}
+      <div
+        class="border rounded-xl px-4 py-3 text-sm
+        {% if is_correct %}
+          border-emerald-500/60 bg-emerald-900/60
+        {% else %}
+          border-red-500/60 bg-red-900/60
+        {% endif %}
+      "
+      >
+        {{ feedback }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
