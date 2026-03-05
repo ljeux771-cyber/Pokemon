@@ -21,6 +21,9 @@ const nextQuestionBtn = document.getElementById("next-question");
 const scoreValueEl = document.getElementById("score-value");
 const modeMcqBtn = document.getElementById("mode-mcq");
 const modeInputBtn = document.getElementById("mode-input");
+const fileLoaderEl = document.getElementById("file-loader");
+const fileInputEl = document.getElementById("file-input");
+const fileLoadBtn = document.getElementById("load-file-button");
 
 function normalizeName(str) {
   if (!str) return "";
@@ -32,24 +35,7 @@ function normalizeName(str) {
     .toLowerCase();
 }
 
-async function loadPokemonData() {
-  if (typeof XLSX === "undefined") {
-    throw new Error(
-      "La librairie XLSX n'a pas été chargée. Vérifie ta connexion internet."
-    );
-  }
-
-  const response = await fetch(EXCEL_FILE_PATH, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(
-      `Impossible de charger le fichier ${EXCEL_FILE_PATH}. Vérifie qu'il est bien présent dans le même dossier que index.html.`
-    );
-  }
-
-  const arrayBuffer = await response.arrayBuffer();
-  const data = new Uint8Array(arrayBuffer);
-  const workbook = XLSX.read(data, { type: "array" });
-
+function buildPokemonListFromWorkbook(workbook) {
   const firstSheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[firstSheetName];
 
@@ -99,6 +85,41 @@ async function loadPokemonData() {
   }
 
   pokemonList = list;
+}
+
+async function loadPokemonDataFromServer() {
+  if (typeof XLSX === "undefined") {
+    throw new Error(
+      "La librairie XLSX n'a pas été chargée. Vérifie ta connexion internet."
+    );
+  }
+
+  const response = await fetch(EXCEL_FILE_PATH, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(
+      `Impossible de charger le fichier ${EXCEL_FILE_PATH}. Vérifie qu'il est bien présent dans le même dossier que index.html (ou sélectionne-le manuellement).`
+    );
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const data = new Uint8Array(arrayBuffer);
+  const workbook = XLSX.read(data, { type: "array" });
+
+  buildPokemonListFromWorkbook(workbook);
+}
+
+async function loadPokemonDataFromFile(file) {
+  if (typeof XLSX === "undefined") {
+    throw new Error(
+      "La librairie XLSX n'a pas été chargée. Vérifie ta connexion internet."
+    );
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const data = new Uint8Array(arrayBuffer);
+  const workbook = XLSX.read(data, { type: "array" });
+
+  buildPokemonListFromWorkbook(workbook);
 }
 
 function updateScoreDisplay() {
@@ -261,11 +282,42 @@ function initEvents() {
 
   modeMcqBtn.addEventListener("click", () => setMode("mcq"));
   modeInputBtn.addEventListener("click", () => setMode("input"));
+
+  if (fileLoadBtn && fileInputEl) {
+    fileLoadBtn.addEventListener("click", async () => {
+      if (!fileInputEl.files || !fileInputEl.files[0]) {
+        feedbackEl.textContent = "Choisis d'abord un fichier Excel (.xlsx).";
+        feedbackEl.classList.remove("success");
+        feedbackEl.classList.add("error");
+        return;
+      }
+      try {
+        loadingEl.hidden = false;
+        errorEl.hidden = true;
+        feedbackEl.textContent = "";
+        feedbackEl.classList.remove("success", "error");
+
+        await loadPokemonDataFromFile(fileInputEl.files[0]);
+
+        loadingEl.hidden = true;
+        fileLoaderEl.hidden = true;
+        questionAreaEl.hidden = false;
+        updateScoreDisplay();
+        setMode("mcq");
+      } catch (err) {
+        loadingEl.hidden = true;
+        errorEl.hidden = false;
+        errorEl.textContent =
+          (err && err.message) ||
+          "Erreur lors du chargement du fichier Excel sélectionné.";
+      }
+    });
+  }
 }
 
 async function bootstrap() {
   try {
-    await loadPokemonData();
+    await loadPokemonDataFromServer();
     loadingEl.hidden = true;
     errorEl.hidden = true;
     questionAreaEl.hidden = false;
@@ -276,7 +328,15 @@ async function bootstrap() {
     console.error(err);
     loadingEl.hidden = true;
     errorEl.hidden = false;
-    errorEl.textContent = err.message || "Erreur lors du chargement des données.";
+    errorEl.textContent =
+      (err && err.message) || "Erreur lors du chargement des données.";
+
+    // Active le mode de sélection manuelle du fichier Excel
+    if (fileLoaderEl) {
+      fileLoaderEl.hidden = false;
+    }
+
+    initEvents();
   }
 }
 

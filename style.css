@@ -134,6 +134,26 @@ body {
   border-color: #f69da5;
 }
 
+.manual-load {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.manual-load-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+#file-input {
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
 .question-area {
   display: flex;
   flex-direction: column;

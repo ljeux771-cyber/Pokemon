@@ -39,10 +39,29 @@
           <div id="loading" class="info-banner">
             Chargement des données Pokémon depuis le fichier Excel...
             <br />
-            Assure-toi que le fichier <strong>poke(1).xlsx</strong> est bien présent à côté de cette page.
+            Assure-toi que le fichier <strong>poke(1).xlsx</strong> est bien présent à côté de cette page (dans le même dossier que
+            <strong>index.html</strong>).
           </div>
 
           <div id="error-message" class="info-banner error" hidden></div>
+
+          <div id="file-loader" class="info-banner manual-load" hidden>
+            <p>
+              Impossible de charger automatiquement le fichier Excel.
+              <br />
+              Tu peux le sélectionner manuellement ci‑dessous :
+            </p>
+            <div class="manual-load-controls">
+              <input
+                type="file"
+                id="file-input"
+                accept=".xlsx"
+              />
+              <button id="load-file-button" class="primary-button">
+                Charger le fichier
+              </button>
+            </div>
+          </div>
 
           <div id="question-area" class="question-area" hidden>
             <div class="question-number">
